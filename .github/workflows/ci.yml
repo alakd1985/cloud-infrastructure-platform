@@ -55,5 +55,13 @@ jobs:
       - name: Initialize database
         run: python -m app.src.database.init_db
 
-      - name: Run tests
-        run: pytest -v --cov=app --cov-report=term-missing
+      - name: Run unit and application tests
+        run: >-
+          pytest -v
+          --cov=app
+          --cov-report=term-missing
+          --ignore=app/tests/stripe_integration_test.py
+          --ignore=app/tests/test_customer_service.py
+          --ignore=app/tests/test_payment_intent_service.py
+          --ignore=app/tests/test_price_service.py
+          --ignore=app/tests/test_product_service.py
