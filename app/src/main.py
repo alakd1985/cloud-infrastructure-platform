@@ -2,6 +2,8 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 
+from app.src.api.webhook_routes import router as webhook_router
+
 
 class Item(BaseModel):
     name: str
@@ -13,8 +15,14 @@ app = FastAPI(
     description="Cloud-native infrastructure demonstration API",
     version="1.0.0",
 )
+
 items = []
 next_item_id = 1
+
+
+# Register webhook routes.
+app.include_router(webhook_router)
+
 
 @app.get("/health")
 def health_check():
@@ -26,8 +34,9 @@ def root():
     return {
         "application": "Cloud Infrastructure Platform",
         "version": "1.0.0",
-        "description": "Cloud-native infrastructure platform"
+        "description": "Cloud-native infrastructure platform",
     }
+
 
 @app.post("/items", status_code=201)
 def create_item(item: Item):
@@ -36,13 +45,14 @@ def create_item(item: Item):
     new_item = {
         "id": next_item_id,
         "name": item.name,
-        "description": item.description
+        "description": item.description,
     }
 
     items.append(new_item)
     next_item_id += 1
 
     return new_item
+
 
 @app.get("/items")
 def get_items():
@@ -57,12 +67,12 @@ def get_item(item_id: int):
 
     raise HTTPException(
         status_code=404,
-        detail="Item not found"
+        detail="Item not found",
     )
 
 
 @app.delete("/items/{item_id}")
-def delele_item(item_id: int):
+def delete_item(item_id: int):
     for item in items:
         if item["id"] == item_id:
             items.remove(item)
@@ -70,7 +80,7 @@ def delele_item(item_id: int):
 
     raise HTTPException(
         status_code=404,
-        detail="Item not found"
+        detail="Item not found",
     )
 
 
@@ -80,11 +90,9 @@ def update_item(item_id: int, updated_item: Item):
         if item["id"] == item_id:
             item["name"] = updated_item.name
             item["description"] = updated_item.description
+            return item
 
-        return item
     raise HTTPException(
         status_code=404,
-        detail="Item not found"
+        detail="Item not found",
     )
-
-

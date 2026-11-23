@@ -1,0 +1,59 @@
+
+name: Cloud Infrastructure Platform CI
+
+on:
+  push:
+    branches:
+      - "**"
+  pull_request:
+    branches:
+      - "**"
+  workflow_dispatch:
+
+jobs:
+  test:
+    name: Python Tests
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: stripe_app
+          POSTGRES_PASSWORD: ci_test_password
+          POSTGRES_DB: stripe_billing
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U stripe_app -d stripe_billing"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      STRIPE_SECRET_KEY: sk_test_ci_placeholder
+      STRIPE_WEBHOOK_SECRET: whsec_ci_placeholder
+      DATABASE_URL: postgresql+psycopg://stripe_app:ci_test_password@localhost:5432/stripe_billing
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+          cache-dependency-path: requirements.txt
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Install coverage
+        run: pip install pytest-cov
+
+      - name: Initialize database
+        run: python -m app.src.database.init_db
+
+      - name: Run tests
+        run: pytest -v --cov=app --cov-report=term-missing

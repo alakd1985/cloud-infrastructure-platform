@@ -40,3 +40,7 @@ screenshots/
 .idea/
 .vscode/
 .DS_Store
+
+# Temporary local test output
+customer_test_results.txt
+pytest-warning.log
