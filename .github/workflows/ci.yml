@@ -61,4 +61,4 @@ jobs:
           --cov=app
           --cov-report=term-missing
           --ignore=app/tests/stripe_integration_test.py
-          --ignore=app/tests/test_product_service.py
+          
